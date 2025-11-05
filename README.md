@@ -10,24 +10,22 @@ Cliente	     | End Device 	 |   Se une a una red existente y responde a los coma
 
 Estructura general del repositorio
 ZigbeeEjemplo/
-├── Coordinador/            → Ejemplo de Coordinador Zigbee
-│   ├── main/               → Código fuente principal (main.c)
-|   ├── components/         → Componentes personalizados
-│   ├── CMakeLists.txt      → Configuración de build del proyecto
-│   ├── sdkconfig           → Configuración generada por ESP-IDF
-│   ├── partition.csv       → Tabla de particiones (si aplica)
-│   └── README.txt          → Instrucciones específicas del coordinador
-│
-├── Cliente/                → Ejemplo de Cliente (End Device)
-│   ├── main/               → Código fuente principal (main.c)
-|   ├── components/         → Componentes personalizados
-│   ├── CMakeLists.txt      → Configuración de build del proyecto
-│   ├── sdkconfig           → Configuración generada por ESP-IDF
-│   ├── partition.csv       → Tabla de particiones (si aplica)
-│   └── README.txt          → Instrucciones específicas del cliente
-│
-├── CMakeLists.txt          → Archivo raíz (opcional si se usa como contenedor)
-└── README.txt              → Este archivo (documentación general)
+Coordinador/            → Ejemplo de Coordinador Zigbee
+	main/               → Código fuente principal (main.c)
+	components/         → Componentes personalizados
+	CMakeLists.txt      → Configuración de build del proyecto
+	sdkconfig           → Configuración generada por ESP-IDF
+	partition.csv       → Tabla de particiones (si aplica)
+	README.txt          → Instrucciones específicas del coordinador
+Cliente/                → Ejemplo de Cliente (End Device)
+	main/               → Código fuente principal (main.c)
+	components/         → Componentes personalizados
+	CMakeLists.txt      → Configuración de build del proyecto
+	sdkconfig           → Configuración generada por ESP-IDF
+	partition.csv       → Tabla de particiones (si aplica)
+	README.txt          → Instrucciones específicas del cliente
+CMakeLists.txt          → Archivo raíz (opcional si se usa como contenedor)
+README.txt              → Este archivo (documentación general)
 
 Requisitos generales
 -ESP-IDF v5.3.4 o superior
