@@ -1,0 +1,10 @@
+# Name,   Type, SubType, Offset,  Size, Flags
+# Note: if you have increased the bootloader size, make sure to update the offsets to avoid overlap
+# System data partitions
+nvs,        data, nvs,     0x9000,   0x6000,
+phy_init,   data, phy,     0xf000,   0x1000,
+zb_storage, data, fat,     0x10000,  0x6000,
+zb_fct,     data, fat,     0x16000,  0x1000,
+
+# Application firmware
+factory,    app,  factory, 0x20000,  0x180000,
