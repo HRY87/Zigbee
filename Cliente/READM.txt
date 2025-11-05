@@ -1,1 +1,111 @@
+Configuración del Cliente Zigbee(ESP32-C6)
 
+Descripción
+Este proyecto implementa un Zigbee End Device (Cliente) utilizando el ESP32-C6.
+El cliente se une a una red Zigbee existente (creada por un coordinador) y puede:
+
+Responder a comandos del coordinador (por ejemplo, encender/apagar).
+Enviar estados o información (por ejemplo, estado de una luz o sensor).
+
+Este ejemplo está diseñado para funcionar junto con el proyecto Coordinador que actúa como coordinador.
+
+Requisitos previos
+
+ESP-IDF v5.3.4 o superior
+Visual Studio Code con la extensión ESP-IDF
+Python 3.8+
+ESP32-C6
+Cable USB o JTAG
+Puerto COM disponible (por ejemplo, COM9 en Windows)
+
+ADVERTENCIA: Un Coordinador Zigbee activo (por ejemplo, el proyecto Coordinador corriendo en otro ESP32-C6)
+
+Estructura del proyecto
+Cliente/
+├── main/
+│   ├── CMakeLists.txt
+│   └── main.c
+├── CMakeLists.txt
+├── sdkconfig
+├── partition.csv
+└── README.txt
+
+Configuración inicial en VS Code
+
+Abre la carpeta esp_zb_light/ en Visual Studio Code.
+Asegúrate de que la extensión de ESP-IDF esté activa.
+En la barra inferior, configurá lo siguiente:
+
+Acción	Descripción	Comando equivalente
+Versión de ESP-IDF	Seleccioná v5.3.4 o superior	idf.py --version
+Método de Flash	UART o JTAG	(Configuración de extensión)
+Puerto COM	Seleccioná tu puerto (ej. COM9)	idf.py -p COM9 flash
+Target (Dispositivo)	Seleccioná esp32c6	idf.py set-target esp32c6
+
+Configuración del proyecto (menuconfig)
+Abre la terminal ESP-IDF (ícono 💻 o Ctrl + Shift + P → ESP-IDF: Open ESP-IDF Terminal).
+
+Ejecutá: idf.py menuconfig
+
+Dentro del menú, configurá lo siguiente:
+
+Zigbee
+Ruta: Component config → Zigbee
+
+Opciones:
+1) Enable Zigbee stack
+2) Zigbee role: End Device
+
+(Opcional) Configurá el canal Zigbee y PAN ID si querés forzar el enlace con un coordinador específico.
+
+Partition Table
+Ruta: Partition Table → (Custom partition table CSV) → Seleccioná: partition.csv
+
+Logging (opcional)
+Ruta: Component config → Log output
+Configurá el nivel en INFO o DEBUG para ver más detalles.
+Guardá y salí (S → Enter → Q).
+Reconfigurá el proyecto: idf.py reconfigure
+
+Archivo de particiones (partition.csv)
+Podés usar el mismo archivo del coordinador o uno básico como este:
+
+# Name,   Type, SubType, Offset,  Size, Flags
+nvs,      data, nvs,     0x9000,  0x6000,
+phy_init, data, phy,     0xf000,  0x1000,
+factory,  app,  factory, 0x10000, 1M,
+storage,  data, spiffs,  ,        512K,
+
+Compilar y flashear
+1️) Compilar el proyecto: idf.py build
+2️) Flashear el firmware: idf.py -p COM9 flash
+2.1) (Opcional) Borrar y volver a flashear: idf.py -p COM9 erase_flash build flash
+3) Monitorear la salida: idf.py -p COM9 monitor
+
+Salida esperada en el monitor
+Si el coordinador (esp_zb_switch) está activo, deberías ver algo como:
+I (1500) ZIGBEE_END_DEVICE: Zigbee End Device iniciado, buscando red...
+I (2500) ZIGBEE_END_DEVICE: Joined Zigbee network successfully
+I (2520) APP_MAIN: Device is now active in the Zigbee network
+
+
+Y en el coordinador:
+I (3000) ZIGBEE_COORDINATOR: New device joined, short address: 0x5678
+
+Notas finales
+-El cliente no crea red: solo se une a una red Zigbee existente.
+-Asegúrate de que el coordinador esté encendido antes de iniciar el cliente.
+-Si el cliente no encuentra la red, revisá el canal Zigbee y el PAN ID en menuconfig.
+-Para limpiar en caso de errores de compilación:
+
+idf.py fullclean
+idf.py build
+
+Verificación de comunicación
+Cuando ambos dispositivos estén funcionando:
+En el Coordinador (esp_zb_switch) deberías ver: I (3010) ZIGBEE_COORDINATOR: Device joined: 0x1234
+
+
+En el Cliente (esp_zb_light) deberías ver:
+
+I (2500) ZIGBEE_END_DEVICE: Joined Zigbee network successfully
