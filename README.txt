@@ -83,6 +83,6 @@ No subir:
 /managed_components/
 /sdkconfig.old/
 
-Si modificás configuraciones en menuconfig, recordá ejecutar idf.py reconfigure.
-
-Usá diferentes puertos COM para flashear coordinador y cliente.
+Consejos importantes:
+Si modificás configuraciones en menuconfig, no te olvides de ejecutar "idf.py reconfigure" para que note los cambios.
+Usar diferentes puertos COMx para flashear coordinador y cliente, para evitar errores
