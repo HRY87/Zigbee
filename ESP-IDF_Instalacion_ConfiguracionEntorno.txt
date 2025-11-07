@@ -1,0 +1,179 @@
+README - INSTALACIÓN Y USO DE ESP-IDF 5.3.4 CON ZIGBEE
+=======================================================
+
+1. INSTALACIÓN DE ESP-IDF 5.3.4 (Ultima versión que se actualizo las bibliotecas de Zigbee)
+-------------------------------
+Pasos para instalar ESP-IDF v5.3.4:
+
+1. Clonar el repositorio oficial:
+   git clone -b v5.3.4 https://github.com/espressif/esp-idf.git
+
+2. Entrar al directorio:
+   cd esp-idf
+
+3. Ejecutar el script de instalación:
+   ./install.sh
+
+4. Activar el entorno:
+   source export.sh
+
+5. (Opcional) Instalar la extensión de VS Code:
+   - Abrir VS Code
+   - Buscar "Espressif IDF" en extensiones
+   - Instalar y configurar la ruta de ESP-IDF en settings.json
+
+2. CONFIGURACIÓN DEL ENTORNO
+----------------------------
+Variables de entorno importantes:
+
+- IDF_PATH: ruta al directorio esp-idf
+- PATH: incluir herramientas como xtensa-esp32-elf/bin
+
+Verificar instalación:
+- idf.py --version
+- python --version
+- xtensa-esp32-elf-gcc --version
+
+3. COMANDOS CLAVE DE ESP-IDF
+----------------------------
+- idf.py build       → Compila el proyecto
+- idf.py flash       → Flashea el firmware al dispositivo
+- idf.py monitor     → Abre terminal serie
+- idf.py clean       → Limpia la compilación
+- idf.py menuconfig  → Configura opciones del proyecto
+
+4. ARQUITECTURA DEL PROYECTO
+----------------------------
+Estructura típica:
+
+- main/              → Código principal del usuario
+- components/        → Componentes personalizados o externos
+- build/             → Archivos generados
+- sdkconfig          → Configuración del proyecto
+- CMakeLists.txt     → Configuración de CMake
+
+Flujo de compilación:
+- CMake configura el proyecto
+- Ninja compila los componentes
+- ELF generado se flashea al dispositivo
+
+5. COMPONENTS Y MANAGEMENT COMPONENTS
+-------------------------------------
+En ESP-IDF los componentes son módulos reutilizables que encapsulan funcionalidad
+(drivers, librerías, stacks de comunicación, etc.).
+
+- Carpeta "components":
+  → Aquí se colocan los componentes locales del proyecto.
+  → Son librerías propias o externas que se agregan manualmente.
+  → Ejemplo: un módulo Zigbee adaptado, un driver específico, etc.
+
+- Management components (registry):
+  → Son componentes que se obtienen desde el ESP-IDF Component Registry.
+  → Se instalan y gestionan con el comando:
+      idf.py add-dependency "nombre_componente"
+  → Se integran automáticamente en el proyecto y quedan registrados en el archivo
+    idf_component.yml.
+  → Ejemplo: esp-zigbee-lib, mqtt, lvgl, etc.
+
+Ventajas del registry:
+- Versionado automático y control de dependencias.
+- Descarga directa desde repositorios oficiales.
+- Facilita mantener proyectos escalables y reproducibles.
+
+Ejemplo de uso:
+idf.py add-dependency "espressif/esp-zigbee-lib^1.0.0"
+
+
+6. COMPONENTES ESTÁNDAR DE ESP-IDF
+-------------------------------------------------------------
+| Componente   | Función principal                          |
+|--------------|--------------------------------------------|
+| driver       | Control de periféricos (GPIO, UART, etc.)  |
+| freertos     | Sistema operativo en tiempo real           |
+| esp_common   | Inicialización y utilidades generales      |
+| log          | Sistema de logging                         |
+| esp_system   | Manejo de errores, reinicios, etc.         |
+| nvs_flash    | Almacenamiento persistente                 |
+
+7. COMPONENTES ZIGBEE: ESP-ZIGBEE-LIB Y ESP-ZBOSS-LIB
+-----------------------------------------------------
+esp-zigbee-lib:
+- Biblioteca oficial de Espressif para Zigbee
+- Abstracción de ZBOSS + integración con ESP-IDF
+- Incluye APIs para commissioning, clusters, etc.
+
+esp-zboss-lib:
+- Biblioteca base ZBOSS (Zigbee stack de DSR)
+- Proporciona la implementación del protocolo Zigbee
+- No se usa directamente, sino a través de esp-zigbee-lib
+
+Integración:
+- Se agregan como componentes en la carpeta "components"
+- Se configuran en sdkconfig y CMakeLists.txt
+- Se inicializa Zigbee en el main usando esp_zb_init() y similares
+
+Diferencias:
+- esp-zigbee-lib es el wrapper oficial y recomendado
+- esp-zboss-lib es la base técnica, no se modifica directamente
+
+8. TABLA DE PARTICIONES (PARTITION TABLE)
+-----------------------------------------
+La tabla de particiones define cómo se distribuye la memoria flash del ESP32.
+
+Ubicación:
+- Se encuentra en el archivo partitions.csv o en sdkconfig si se usa una tabla por defecto.
+
+Tipos comunes de particiones:
+| Tipo         | Subtipo     | Descripción                          |
+|--------------|-------------|--------------------------------------|
+| app          | factory     | Firmware principal                   |
+| app          | ota_0/1     | Particiones para actualizaciones OTA |
+| data         | nvs         | Almacenamiento persistente (NVS)     |
+| data         | phy         | Calibración de radio                 |
+| data         | spiffs      | Sistema de archivos SPIFFS           |
+
+Ejemplo de tabla (partitions.csv):
+nvs,      data, nvs,     0x9000,  0x5000,
+phy_init, data, phy,     0xe000,  0x1000,
+factory,  app,  factory, 0x10000, 1M,
+ota_0,    app,  ota_0,   0x110000, 1M,
+ota_1,    app,  ota_1,   0x210000, 1M,
+spiffs,  data, spiffs,  0x310000, 0xF0000
+
+Configuración:
+- Se puede cambiar desde idf.py menuconfig → Partition Table
+- También se puede especificar en CMakeLists.txt con:
+  set(PROJECT_PARTITION_TABLE "partitions.csv")
+
+Importancia:
+- Permite actualizaciones OTA
+- Define espacio para logs, archivos, calibración, etc.
+- Es clave para proyectos Zigbee que usan NVS y OTA
+
+9. CONFIGURACIÓN DE SDKCONFIG, BOARD Y FLASH
+--------------------------------------------
+El archivo sdkconfig guarda todas las configuraciones del proyecto.
+
+Acceso:
+- idf.py menuconfig
+
+Opciones importantes:
+- Selección de la placa (Board):
+  → En menuconfig: "Serial flasher config" → "Default serial port"
+  → "Target" → elegir ESP32, ESP32-C6, etc.
+- Tipo de flash:
+  → Configurable en "Serial flasher config"
+  → Parámetros: tamaño de flash (2MB, 4MB, 8MB), modo de escritura (QIO, DIO)
+- Velocidad de flash:
+  → Ajustable en menuconfig (ej. 40MHz, 80MHz)
+- Particiones:
+  → Selección de tabla por defecto o personalizada
+- Configuración Zigbee:
+  → Se habilita desde "Component config" → "Zigbee"
+
+Importancia de sdkconfig:
+- Centraliza todas las opciones del proyecto
+- Permite reproducir configuraciones en diferentes entornos
+- Se versiona junto con el código para mantener coherencia
+
+FIN DEL README

@@ -1,0 +1,92 @@
+Estructura general de un proyecto ESP-IDF
+📂 mi_proyecto/
+├── 📁 main/
+│   ├── main.c
+│   └── CMakeLists.txt        <-- CMake del componente principal
+│
+├── 📁 components/             <-- Componentes personalizados
+│   └── 📁 zcl_utility/
+│       ├── 📁 include/
+│       │   └── zcl_utility.h
+│       ├── 📁 src/
+│       │   └── zcl_utility.c
+│       └── CMakeLists.txt    <-- CMake del componente zcl_utility
+│
+├── 📁 managed_components/     <-- Librerías descargadas con idf.py add-dependency
+│   └── espressif__esp-zigbee-lib/
+│       ├── include/
+│       └── lib/
+│
+├── CMakeLists.txt             <-- CMake raíz del proyecto
+├── sdkconfig
+└── idf.py                     <-- Herramienta de build de ESP-IDF
+
+Hay mas archivos y carpetas pero los importantes son estos a la hora de programar código
+
+1.CMakeLists.txt (raíz del proyecto)
+
+Ubicado en la carpeta principal (mi_proyecto/).
+
+Ejemplo:
+
+# Establece la versión mínima requerida de CMake
+cmake_minimum_required(VERSION 3.16.0)
+
+# Indica el directorio donde está el ESP-IDF
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+
+# Define el nombre del proyecto (usa el mismo que el folder raíz)
+project(Zigbee_Cliente)
+
+Este archivo es el punto de entrada de la configuración del proyecto.
+Llama al sistema de build de ESP-IDF y busca los componentes.
+
+2.CMakeLists.txt (componente principal main/)
+
+Ejemplo:
+
+idf_component_register(
+    SRC_DIRS  "."
+    INCLUDE_DIRS "."
+)
+
+
+Declara el componente principal.
+
+3.CMakeLists.txt (componente zcl_utility/) (Este generaba problemas porque esta en la carpeta examples y no tenia CmakeLists)
+
+Ejemplo: (Este funciono para detectarlo)
+
+idf_component_register(
+    SRC_DIRS "src"
+    INCLUDE_DIRS "include"
+    REQUIRES espressif__esp-zigbee-lib
+)
+
+Este CMake declara el componente zcl_utility.
+REQUIRES esp-zigbee-lib le da acceso a las cabeceras Zigbee ubicadas en managed_components.
+
+
+Flujo de detección de componentes
+
+Siempre que se haga alguna modificación sobre los CMakeLists hay que ejecutar el siguiente comando antes de compilar, sino el IDE no considera los cambios
+
+Esto se escribe en una terminal ESP-IDF
+
+idf.py reconfigure
+
+
+ESP-IDF busca automáticamente todos los CMakeLists.txt dentro de:
+
+main/
+
+components/
+
+managed_components/
+
+y los registra como componentes del proyecto.
+Cada uno puede depender de otros mediante REQUIRES, formando un grafo de dependencias que CMake resuelve automáticamente.
+
+Una vez que termine si se hizo bien no hay mas errores de IncludePath
+
+
