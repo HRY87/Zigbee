@@ -132,12 +132,5 @@ Para salir del monitor usa `Ctrl+]`.
 - [ ] Integración avanzada MQTT
 - [ ] Documentación detallada y ejemplos avanzados
 
----
-
-## Licencia
-
-Este proyecto está bajo licencia MIT.
-
----
 
 **Desarrollado por HRY87 · Proyecto académico y experimental**
